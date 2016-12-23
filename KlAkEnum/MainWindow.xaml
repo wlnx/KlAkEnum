@@ -1,11 +1,11 @@
-﻿<Window x:Class="KlAkEnum.MainWindow"
+﻿<Window x:Name="SrvTreeWnd" x:Class="KlAkEnum.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KlAkEnum"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="788.958">
+        Title="Серверы Kaspersky Security Center" Height="350" Width="788.958">
     <Grid >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="275*"/>
@@ -25,6 +25,9 @@
             <MenuItem Header="Действия">
                 <MenuItem x:Name="miConnect" Header="Подключиться" IsEnabled="False" Click="miConnect_Click"/>
                 <MenuItem x:Name="miDisconnect" Header="Отключиться" IsEnabled="False"/>
+                <Separator/>
+                <MenuItem x:Name="miBrowse" Header="Обозреватель KSC" Click="miBrowse_Click" IsEnabled="False"/>
+                <MenuItem x:Name="miTest" Header="Test" Click="miTest_Click"/>
             </MenuItem>
         </Menu>
         <TreeView x:Name="SrvTree" Grid.Row="1" SelectedItemChanged="SrvTree_SelectedItemChanged"/>

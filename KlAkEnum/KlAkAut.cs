@@ -58,7 +58,7 @@ namespace KlAkAut
         IKlAkVapmCtrl = 53
     }
 
-    class AllowNWAuth
+    class NativeMethods
     {
         [DllImport("ole32.dll")]
         static extern int CoInitializeSecurity(IntPtr pVoid, int
@@ -125,8 +125,10 @@ namespace KlAkAut
 
     class KlAkObject : IDisposable
     {
+        bool fInitObj = true;
         protected bool fDisposed = false;
         protected dynamic fObject;
+        protected string fKlAkTypeName;
 
         public dynamic Object
         {
@@ -144,10 +146,15 @@ namespace KlAkAut
             }
         }
 
-        public KlAkObject(string KlAkTypeName)
+        public KlAkObject(string KlAkTypeName, bool InitObj = true)
         {
-            Type _KlAkType = Type.GetTypeFromProgID(KlAkTypeName, true);
-            fObject = (dynamic)Activator.CreateInstance(_KlAkType);
+            fInitObj = InitObj;
+            fKlAkTypeName = KlAkTypeName;
+            if (fInitObj)
+            {
+                Type _KlAkType = Type.GetTypeFromProgID(fKlAkTypeName, true);
+                fObject = (dynamic)Activator.CreateInstance(_KlAkType);
+            }            
         }
 
         public void Dispose()
@@ -166,7 +173,11 @@ namespace KlAkAut
                 // NA yet
             }
 
-            Marshal.ReleaseComObject(fObject);
+            if (fInitObj)
+            {
+                Marshal.ReleaseComObject(fObject);
+            }
+
             fDisposed = true;
         }
     }
@@ -181,7 +192,10 @@ namespace KlAkAut
                     throw new ObjectDisposedException("KlAkParams", "Объект уже освобождён");
                 object[] result = new object[Object.Count];
                 for (int i = 0; i < Object.Count; i++)
+                {
                     result[i] = Object[i];
+                }
+
                 return result;
             }
         }
@@ -199,6 +213,12 @@ namespace KlAkAut
         public KlAkParams() : base("klakaut.KlAkParams")
         {
 
+        }
+
+        public KlAkParams(dynamic Params) : base("klakaut.KlAkParams")
+        {
+            Marshal.ReleaseComObject(fObject);
+            fObject = Params;
         }
 
         public void Add(dynamic index, dynamic Val)
@@ -251,7 +271,7 @@ namespace KlAkAut
         bool fConnected = false;
         string fAddr = "localhost";
         ushort fPort = 13291;
-
+        
         public string Build
         {
             get
@@ -278,13 +298,15 @@ namespace KlAkAut
             {
                 if (fDisposed)
                     throw new ObjectDisposedException("KlAkProxy", "Объект уже освобождён");
-                Hashtable result = new Hashtable();
-                result["IsAlive"] = Object.GetProp("IsAlive");
-                result["KLADMSRV_VS_LICDISABLED"] = Object.GetProp("KLADMSRV_VS_LICDISABLED");
-                result["KLADMSRV_VSID"] = Object.GetProp("KLADMSRV_VSID");
-                result["KLADMSRV_USERID"] = Object.GetProp("KLADMSRV_USERID");
-                result["KLADMSRV_SAAS_BLOCKED"] = Object.GetProp("KLADMSRV_SAAS_BLOCKED");
-                result["KLADMSRV_SERVER_HOSTNAME"] = Object.GetProp("KLADMSRV_SERVER_HOSTNAME");
+                Hashtable result = new Hashtable()
+                {
+                    { "IsAlive", Object.GetProp("IsAlive") },
+                    { "KLADMSRV_VS_LICDISABLED", Object.GetProp("KLADMSRV_VS_LICDISABLED") },
+                    { "KLADMSRV_VSID", Object.GetProp("KLADMSRV_VSID") },
+                    { "KLADMSRV_USERID", Object.GetProp("KLADMSRV_USERID") },
+                    { "KLADMSRV_SAAS_BLOCKED", Object.GetProp("KLADMSRV_SAAS_BLOCKED") },
+                    { "KLADMSRV_SERVER_HOSTNAME", Object.GetProp("KLADMSRV_SERVER_HOSTNAME") }
+                };
                 return result;
             }
         }
@@ -299,9 +321,9 @@ namespace KlAkAut
             }
         }
 
-        public KlAkProxy() : base("klakaut.KlAkProxy")
+        public KlAkProxy() : base("klakaut.KlAkProxy", false)
         {
-
+            
         }
 
         public void Disconnect()
@@ -309,35 +331,42 @@ namespace KlAkAut
             if (fDisposed)
                 throw new ObjectDisposedException("KlAkProxy", "Объект уже освобождён");
             Object.Disconnect();
+            Marshal.ReleaseComObject(fObject);
             fConnected = false;
         }
 
-        public void Connect(string Address = "", ushort Port = 0)
+        public void Connect(string Address = "", ushort Port = 0, bool Virtual = false)
         {
             if (fDisposed)
                 throw new ObjectDisposedException("KlAkProxy", "Объект уже освобождён");
-            KlAkParams Params = new KlAkParams();
-            if (Address != "")
+
+            Type _KlAkType = Type.GetTypeFromProgID(fKlAkTypeName, true);
+            fObject = (dynamic)Activator.CreateInstance(_KlAkType);
+            using (KlAkParams Params = new KlAkParams())
             {
-                fAddr = Address;
+                if (Address != "")
+                {
+                    fAddr = Address;
+                }
+                if (Port != 0)
+                {
+                    fPort = Port;
+                }
+                Params.Add("Address", fAddr + ":" + fPort.ToString());
+                Object.Connect(Params.Object);
             }
-            if (Port != 0)
-            {
-                fPort = Port;
-            }
-            Params.Add("Address", fAddr + ":" + fPort.ToString());
-            Object.Connect(Params.Object);
-            Params.Dispose();
+
             fConnected = true;
         }
 
-        public void Connect(KlAkSlaveServers Parent, int Id)
+        public void Connect(dynamic Parent, int Id)
         {
             if (fDisposed)
                 throw new ObjectDisposedException("KlAkProxy", "Объект уже освобождён");
+            if (Parent is KlAkVServers3)
+                throw new NotImplementedException("Подключение к виртуальному серверу не реализовано");
             fAddr = "";
             fPort = 0;
-            Marshal.ReleaseComObject(fObject);
             fObject = Parent.Object.Connect(Id, -1);
             fConnected = true;
         }
@@ -407,18 +436,82 @@ namespace KlAkAut
                 if (fDisposed)
                     throw new ObjectDisposedException("KlAkSlaveServers", "Объект уже освобождён");
                 Hashtable result = new Hashtable();
-                dynamic ServerInfo = Object.GetServerInfo(i, (new KlAkCollection("KLSRVH_SRV_ADDR", "KLSRVH_SRV_DN", "KLSRVH_SRV_GROUPID")).Object);
-                result["KLSRVH_SRV_ADDR"] = ServerInfo.Item("KLSRVH_SRV_ADDR");
-                result["KLSRVH_SRV_DN"] = ServerInfo.Item("KLSRVH_SRV_DN");
-                KlAkGroups Grps = new KlAkGroups();
-                Grps.Object.AdmServer = Object.AdmServer;
-                result["KLSRVH_SRV_GROUPID"] = Grps[ServerInfo.Item("KLSRVH_SRV_GROUPID")]["grp_full_name"];
-                Grps.Dispose();
+                foreach (dynamic Server in Object.GetServers(-1))
+                {
+                    if (Server.Item("KLSRVH_SRV_ID") != i)
+                        continue;
+                    foreach (string Param in Server)
+                        result[Param] = Server.Item(Param);
+                    using (KlAkGroups Grps = new KlAkGroups())
+                    {
+                        Grps.Object.AdmServer = Object.AdmServer;
+                        result["grp_full_name"] = Grps[(int)result["KLSRVH_SRV_GROUPID"]]["grp_full_name"];
+                    }
+                    break;
+                }
                 return result;
             }
         }
 
         public KlAkSlaveServers() : base("klakaut.KlAkSlaveServers")
+        {
+
+        }
+    }
+
+    class KlAkVServers3 : KlAkObject
+    {
+        public KlAkProxy AdmSrv
+        {
+            set
+            {
+                if (fDisposed)
+                    throw new ObjectDisposedException("KlAkVServers3", "Объект уже освобождён");
+                Object.AdmServer = value.Object;
+            }
+        }
+
+        public int[] Ids
+        {
+            get
+            {
+                if (fDisposed)
+                    throw new ObjectDisposedException("KlAkVServers3", "Объект уже освобождён");
+                int[] result = new int[Object.GetVServers(-1).Count];
+                int i = 0;
+                foreach (dynamic Srv in Object.GetVServers(-1))
+                {
+                    result[i] = Srv["KLVSRV_ID"];
+                }
+                return result;
+            }
+        }
+
+        public Hashtable this[int i]
+        {
+            get
+            {
+                if (fDisposed)
+                    throw new ObjectDisposedException("KlAkVServers3", "Объект уже освобождён");
+                Hashtable result = new Hashtable();
+                foreach (dynamic Server in Object.GetVServers(-1))
+                {
+                    if (Server.Item("KLVSRV_ID") != i)
+                        continue;
+                    foreach (string Param in Server)
+                        result[Param] = Server.Item(Param);
+                    using (KlAkGroups Grps = new KlAkGroups())
+                    {
+                        Grps.Object.AdmServer = Object.AdmServer;
+                        result["grp_full_name"] = Grps[(int)result["KLVSRV_GRP"]]["grp_full_name"];
+                    }
+                    break;
+                }
+                return result;
+            }
+        }
+
+        public KlAkVServers3() : base("klakaut.KlAkVServers3")
         {
 
         }
