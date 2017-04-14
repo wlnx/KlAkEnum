@@ -47,10 +47,10 @@
             <Label Content="Настройки подключения" Grid.Row="0" Grid.Column="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.ColumnSpan="2" FontWeight="Bold" FontSize="14"/>
             <Label Content="Адрес сервера" Grid.Row="1" Grid.Column="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             <Label Content="Порт" Grid.Row="1" Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-            <CheckBox Content="Сжимать трафик" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsThreeState="True" IsChecked="{x:Null}"/>
+            <CheckBox x:Name="cbCompressTraffic" Content="Сжимать трафик" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsThreeState="True" IsChecked="{x:Null}"/>
             <CheckBox x:Name="cbUseSSL" Content="Шифровать трафик" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" IsThreeState="True" IsChecked="{x:Null}" Indeterminate="cbIsAuthenticating_Checked" Checked="cbIsAuthenticating_Checked" Unchecked="cbIsAuthenticating_Checked"/>
-            <CheckBox Content="Использовать шлюз соединений" Grid.Row="4" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2" IsThreeState="True" IsChecked="{x:Null}"/>
-            <TextBox x:Name="tbAddress" Grid.Column="0" Grid.Row="2" TextWrapping="Wrap" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1"/>
+            <CheckBox x:Name="cbThroughGw" Content="Использовать шлюз соединений" Grid.Row="4" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2" IsThreeState="True" IsChecked="{x:Null}"/>
+            <TextBox x:Name="tbAddress" Grid.Column="0" Grid.Row="2" TextWrapping="Wrap" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1" Text="localhost"/>
             <TextBox x:Name="tbPort" Grid.Column="2" Grid.Row="2" TextWrapping="Wrap" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1" Text="13291"/>
         </Grid>
         <Grid Grid.Row="2">

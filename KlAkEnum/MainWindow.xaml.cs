@@ -179,6 +179,17 @@ namespace KlAkEnum
     class TVISrvRoot : TreeViewItem
     {
         public KlAkProxy fPxy = null;
+        KlAkParams fParams = null;
+
+        public KlAkParams ConnectionParameters
+        {
+            get { return fParams; }
+            set
+            {
+                fParams = value;
+                Header = value.get_Item("Address");
+            }
+        }
         
         public delegate void ConnectEventHandler(object sender);
         public event ConnectEventHandler OnConnect;
@@ -188,21 +199,13 @@ namespace KlAkEnum
 
         public TVISrvRoot()
         {
-            Header = "KSCRoot";
+            Header = "<Не заданы параметры подключения>";
         }
 
-        public void Connect(string[] Creds = null)
+        public void Connect()
         {
-            KlAkParams Params = new KlAkParams() { { "Address", (string)Header + ":13291" } };
-            if (Creds != null)
-            {
-                Params.Add("UseSSL", true);
-                Params.Add("User", Creds[0]);
-                Params.Add("Password", Creds[1]);
-                Params.Add("Domain", Creds[2]);
-            }
             fPxy = new KlAkProxy();
-            fPxy.Connect(Params);
+            fPxy.Connect(fParams);
 
             Items.Add(new TVISlaveSrvs(new KlAkSlaveServers() { AdmServer = fPxy }));
             Items.Add(new TVIVSrvs(new KlAkVServers3() { AdmServer = fPxy }));
@@ -291,7 +294,7 @@ namespace KlAkEnum
     public partial class MainWindow : Window
     {
         int CISResult;
-        string[] fCreds = null;
+        bool fCredsRequired = false;
 
         void ViewSrvInfo(TVISrvVirtual Item)
         {
@@ -321,7 +324,7 @@ namespace KlAkEnum
             if (CISResult != 0)
             {
                 MessageBox.Show("Ошибка при вызове CoInitializeSecurity (0x" + CISResult.ToString("X") + "). Используем явную аутентификацию.", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                fCreds = new string[3] { "user", "passwd", "test" };
+                fCredsRequired = true;
             }
             InitializeComponent();
         }
@@ -338,11 +341,46 @@ namespace KlAkEnum
 
         private void MenuAddSrv_Click(object sender, RoutedEventArgs e)
         {
-            if (!SrvTree.HasItems)
+            var ConnParamsWnd = new ConnParams() { Owner = this } ;
+            if (fCredsRequired)
             {
-                var ConnParamsWnd = new ConnParams() { Owner = this };
-                ConnParamsWnd.ShowDialog();
-                var Root = new TVISrvRoot();
+                ConnParamsWnd.cbIsAuthenticating.IsEnabled = ConnParamsWnd.cbUseSSL.IsEnabled = !(bool)(ConnParamsWnd.cbIsAuthenticating.IsChecked = true);
+            }
+            if ((bool)ConnParamsWnd.ShowDialog())
+            {
+                var Params = new KlAkParams()
+                {
+                    { "Address", ConnParamsWnd.tbAddress.Text + ":" + ConnParamsWnd.tbPort.Text }
+                };
+                if (ConnParamsWnd.cbUseSSL.IsChecked.HasValue)
+                {
+                    Params.Add("UseSSL", ConnParamsWnd.cbUseSSL.IsChecked);
+                }
+                if (ConnParamsWnd.cbCompressTraffic.IsChecked.HasValue)
+                {
+                    Params.Add("CompressTraffic", ConnParamsWnd.cbUseSSL.IsChecked);
+                }
+                if ((bool)ConnParamsWnd.cbIsAuthenticating.IsChecked)
+                {
+                    Params.Add("User", ConnParamsWnd.tbUser.Text);
+                    if (ConnParamsWnd.tbDomain.Text != "") { Params.Add("Domain", ConnParamsWnd.tbDomain.Text); }
+                    Params.Add("Password", ConnParamsWnd.tbPassword.Password);
+                }
+                if ((bool)ConnParamsWnd.cbIsUsingProxy.IsChecked)
+                {
+                    Params.Add("ProxyAddress", ConnParamsWnd.tbProxyAddress.Text + ":" + ConnParamsWnd.tbProxyPort.Text);
+                    if (ConnParamsWnd.tbProxyUser.Text != "")
+                    {
+                        Params.Add("ProxyLogin", ConnParamsWnd.tbProxyUser.Text);
+                        Params.Add("ProxyPassword", ConnParamsWnd.tbProxyPassword.Password);
+                    }
+                }
+                if (ConnParamsWnd.cbThroughGw.IsChecked.HasValue)
+                {
+                    Params.Add("ThroughGw", ConnParamsWnd.cbThroughGw.IsChecked);
+                }
+
+                var Root = new TVISrvRoot() { ConnectionParameters = Params } ;
                 SrvTree.Items.Add(Root);
             }
         }
@@ -378,7 +416,7 @@ namespace KlAkEnum
         {
             if (SrvTree.SelectedItem is TVISrvRoot Root)
             {
-                Root.Connect(fCreds);
+                Root.Connect();
             }
             else if (SrvTree.SelectedItem is TVISrvSlave Slave)
             {
