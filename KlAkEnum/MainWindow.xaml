@@ -17,23 +17,21 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Menu x:Name="MainMenu" VerticalAlignment="Top" Grid.ColumnSpan="3">
-            <MenuItem x:Name="miFile" Header="Файл">
-                <MenuItem x:Name="miAddSrv" Header="Добавить сервер" Click="miAddSrv_Click"/>
+            <MenuItem x:Name="MenuFile" Header="Файл">
+                <MenuItem x:Name="MenuAddSrv" Header="Добавить сервер" Click="MenuAddSrv_Click"/>
                 <Separator/>
-                <MenuItem x:Name="miExit" Header="Выход"/>
+                <MenuItem x:Name="MenuExit" Header="Выход" Click="MenuExit_Click"/>
             </MenuItem>
             <MenuItem Header="Действия">
-                <MenuItem x:Name="miConnect" Header="Подключиться" IsEnabled="False" Click="miConnect_Click"/>
-                <MenuItem x:Name="miDisconnect" Header="Отключиться" IsEnabled="False"/>
+                <MenuItem x:Name="MenuConnect" Header="Подключиться" IsEnabled="False" Click="MenuConnect_Click"/>
+                <MenuItem x:Name="MenuDisconnect" Header="Отключиться" IsEnabled="False"/>
                 <Separator/>
-                <MenuItem x:Name="miBrowse" Header="Обозреватель KSC" Click="miBrowse_Click" IsEnabled="False"/>
-                <MenuItem x:Name="miTest" Header="Test" Click="miTest_Click"/>
+                <MenuItem x:Name="MenuBrowse" Header="Обозреватель KSC" IsEnabled="False"/>
+                <MenuItem x:Name="MenuTest" Header="Test" Click="MenuTest_Click"/>
             </MenuItem>
         </Menu>
         <TreeView x:Name="SrvTree" Grid.Row="1" SelectedItemChanged="SrvTree_SelectedItemChanged"/>
         <GridSplitter Grid.Row="1" Grid.Column="1" Width="2" HorizontalAlignment="Center"/>
-        <TextBox x:Name="tbData" Grid.Row="1" Grid.Column="2" IsReadOnly="True" />
+        <TreeView x:Name="SrvInfo" Grid.Row="1" Grid.Column="2"/>
     </Grid>
-
-
 </Window>

@@ -52,6 +52,26 @@
     <SolutionPath>C:\Users\user.TEST\Source\Repos\KlAkEnum\KlAkEnum.sln</SolutionPath>
     <SolutionVersion>14.0</SolutionVersion>
     <PlogVersion>4</PlogVersion>
-    <ModificationDate>2016-12-14T01:00:31.4014018Z</ModificationDate>
+    <ModificationDate>2017-03-01T00:29:44.1626879Z</ModificationDate>
   </Solution_Path>
+  <PVS-Studio_Analysis_Log>
+    <FavIcon>false</FavIcon>
+    <Level>3</Level>
+    <DefaultOrder>1</DefaultOrder>
+    <ErrorCode>V051</ErrorCode>
+    <Message>Some of the references in 'KlAkEnum' project are missing or incorrect. The analysis results could be incomplete. Consider making the project fully compilable and building it before analysis.</Message>
+    <Project>KlAkEnum</Project>
+    <ShortFile />
+    <Line>0</Line>
+    <FalseAlarm>false</FalseAlarm>
+    <File />
+    <CodePrev>0</CodePrev>
+    <CodeCurrent>0</CodeCurrent>
+    <CodeNext>0</CodeNext>
+    <TrialMessage>false</TrialMessage>
+    <Analyzer>0</Analyzer>
+    <LineExtension />
+    <Retired>false</Retired>
+    <AnalyzedSourceFiles />
+  </PVS-Studio_Analysis_Log>
 </NewDataSet>

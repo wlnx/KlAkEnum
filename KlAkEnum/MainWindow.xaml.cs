@@ -1,9 +1,8 @@
 ﻿// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-using KlAkAut;
+using KLAKAUTLib;
 using System;
-using System.Collections;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,214 +12,380 @@ namespace KlAkEnum
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
-
-    class TreeViewItemPxy : TreeViewItem, IDisposable
+    /// 
+    static class NativeMethods
     {
-        public Hashtable PxyInfo = new Hashtable();
-        public int PxyId = 0;
-        public bool IsPxyVirtual;
-        public KlAkProxy Pxy = new KlAkProxy();
-        public TreeViewItem SlavesContainer = null;
-        public TreeViewItem VirtualsContainer = null;
-        private bool fDisposed;
+        [DllImport("ole32.dll")]
+        static extern int CoInitializeSecurity(
+            IntPtr pVoid,
+            int cAuthSvc, 
+            IntPtr asAuthSvc, 
+            IntPtr pReserved1, 
+            RpcAuthnLevel level,
+            RpcImpLevel impers,
+            IntPtr pAuthList,
+            EoAuthnCap dwCapabilities,
+            IntPtr pReserved3
+        );
 
-        public TreeViewItemPxy ParentNode
+
+        enum RpcAuthnLevel
         {
-            get
-            {
-                return (Parent is TreeViewItem ? ((TreeViewItem)Parent).Parent : null) as TreeViewItemPxy;
-            }
+            Default = 0,
+            None = 1,
+            Connect = 2,
+            Call = 3,
+            Pkt = 4,
+            PktIntegrity = 5,
+            PktPrivacy = 6
         }
 
-        public ItemCollection SlaveItems
+
+        enum RpcImpLevel
         {
-            get
-            {
-                if (IsPxyVirtual)
-                    throw new InvalidOperationException("Виртуальный сервер не может иметь подчинённых серверов");
-                return SlavesContainer.Items;
-            }
+            Default = 0,
+            Anonymous = 1,
+            Identify = 2,
+            Impersonate = 3,
+            Delegate = 4
         }
 
-        public ItemCollection VirtualItems
+
+        [Flags]
+        enum EoAuthnCap
         {
-            get
-            {
-                if (IsPxyVirtual)
-                    throw new InvalidOperationException("Виртуальный сервер не может иметь виртуальных серверов");
-                return VirtualsContainer.Items;
-            }
+            None = 0x00,
+            MutualAuth = 0x01,
+            StaticCloaking = 0x20,
+            DynamicCloaking = 0x40,
+            AnyAuthority = 0x80,
+            MakeFullSIC = 0x100,
+            Default = 0x800,
+            SecureRefs = 0x02,
+            AccessControl = 0x04,
+            AppID = 0x08,
+            Dynamic = 0x10,
+            RequireFullSIC = 0x200,
+            AutoImpersonate = 0x400,
+            NoCustomMarshal = 0x2000,
+            DisableAAA = 0x1000
         }
 
-        public TreeViewItemPxy(bool IsVirtual = false) : base()
+        public static int Init()
         {
-            IsPxyVirtual = IsVirtual;
-            if (!IsPxyVirtual)
-            {
-                SlavesContainer = new TreeViewItem
-                {
-                    Header = "Подчинённые серверы"
-                };
-                Items.Add(SlavesContainer);
-                VirtualsContainer = new TreeViewItem
-                {
-                    Header = "Виртуальные серверы"
-                };
-                Items.Add(VirtualsContainer);
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (fDisposed)
-                return;
-
-            if (disposing)
-            {
-                Pxy.Dispose();
-            }
-
-            fDisposed = true;
+            return
+                CoInitializeSecurity(
+                    IntPtr.Zero,
+                    -1,
+                    IntPtr.Zero,
+                    IntPtr.Zero,
+                    RpcAuthnLevel.Default,
+                    RpcImpLevel.Impersonate,
+                    IntPtr.Zero,
+                    EoAuthnCap.None,
+                    IntPtr.Zero
+                );
         }
     }
- 
+
+    static class FetchInfo
+    {
+        public static KlAkParams PxyProps(KlAkProxy Pxy)
+        {
+            // Эти поля взяты из klakaut.chm
+
+            return new KlAkParams()
+            {
+                { "IsAlive", Pxy.GetProp("IsAlive") },
+                { "KLADMSRV_VS_LICDISABLED", Pxy.GetProp("KLADMSRV_VS_LICDISABLED") },
+                { "KLADMSRV_VSID", Pxy.GetProp("KLADMSRV_VSID") },
+                { "KLADMSRV_USERID", Pxy.GetProp("KLADMSRV_USERID")??"<null>" },
+                { "KLADMSRV_SAAS_BLOCKED", Pxy.GetProp("KLADMSRV_SAAS_BLOCKED") },
+                { "KLADMSRV_SERVER_HOSTNAME", Pxy.GetProp("KLADMSRV_SERVER_HOSTNAME") }
+            };
+        }
+
+        public static TreeViewItem KlAkView(string Caption, object Item)
+        {
+            var t = Item.GetType();
+            var iis = t.GetProperties();
+            
+            var result = new TreeViewItem() { Header = Caption };
+            if (Item is KlAkParams Params)
+            {
+                foreach (string Name in Params)
+                {
+                    var Value = Params.get_Item(Name);
+                    if (Marshal.IsComObject(Value))
+                    {
+                        result.Items.Add(KlAkView(Name, Value));
+                    }
+                    else
+                    {
+                        result.Items.Add(new TreeViewItem() { Header = Name + ": " + Value.ToString() });
+                    }
+                }
+            }
+            else if (Item is KlAkCollection Coll)
+            {
+                for (int i = 0; i < Coll.Count; i++)
+                {
+                    object Value = Coll.get_Item(i);
+                    if (Marshal.IsComObject(Value))
+                    {
+                        result.Items.Add(KlAkView(i.ToString(), Value));
+                    }
+                    else
+                    {
+                        result.Items.Add(new TreeViewItem() { Header = i.ToString() + ": " + Value.ToString() });
+                    }
+                }
+            }
+            else { throw new NotImplementedException("Визуализация типа " + Item.GetType().ToString() + " не реализована."); }
+            return result;
+        }
+    }
+
+    class TVISlaveSrvs : TreeViewItem
+    {
+        public KlAkSlaveServers fSlaves = null;
+
+        public TVISlaveSrvs(KlAkSlaveServers SlavesInfo)
+        {
+            Header = "Подчинённые серверы";
+            fSlaves = SlavesInfo;
+            foreach (KlAkParams Slave in fSlaves.GetServers(-1))
+            {
+                Items.Add(new TVISrvSlave(Slave));
+            }
+        }
+    }
+
+    class TVIVSrvs : TreeViewItem
+    {
+        public KlAkVServers3 fVirtuals = null;
+
+        public TVIVSrvs(KlAkVServers3 VirtualsInfo)
+        {
+            Header = "Виртуальные серверы";
+            fVirtuals = VirtualsInfo;
+            foreach (KlAkParams Virtual in VirtualsInfo.GetVServers(-1))
+            {
+                Items.Add(new TVISrvVirtual(Virtual));
+            }
+        }
+    }
+
+    class TVISrvRoot : TreeViewItem
+    {
+        public KlAkProxy fPxy = null;
+        
+        public delegate void ConnectEventHandler(object sender);
+        public event ConnectEventHandler OnConnect;
+
+        public delegate void DisconnectEventHandler(object sender);
+        public event DisconnectEventHandler OnDisconnect;
+
+        public TVISrvRoot()
+        {
+            Header = "KSCRoot";
+        }
+
+        public void Connect(string[] Creds = null)
+        {
+            KlAkParams Params = new KlAkParams() { { "Address", (string)Header + ":13291" } };
+            if (Creds != null)
+            {
+                Params.Add("UseSSL", true);
+                Params.Add("User", Creds[0]);
+                Params.Add("Password", Creds[1]);
+                Params.Add("Domain", Creds[2]);
+            }
+            fPxy = new KlAkProxy();
+            fPxy.Connect(Params);
+
+            Items.Add(new TVISlaveSrvs(new KlAkSlaveServers() { AdmServer = fPxy }));
+            Items.Add(new TVIVSrvs(new KlAkVServers3() { AdmServer = fPxy }));
+            OnConnect?.Invoke(this);
+        }
+
+        public void Disconnect()
+        {
+            Items.Clear();
+            fPxy.Disconnect();
+            fPxy = null;
+            OnDisconnect?.Invoke(this);
+        }
+
+        public TreeViewItem ViewPxyProps()
+        {
+            return (fPxy == null) ? new TreeViewItem() { Header = "Подключение не установлено" } : FetchInfo.KlAkView("Данные о подключении", FetchInfo.PxyProps(fPxy));
+        }
+    }
+
+    class TVISrvSlave : TreeViewItem
+    {
+        public KlAkProxy fPxy = null;
+        public KlAkParams fSrvInfo = null;
+
+        public delegate void ConnectEventHandler(object sender);
+        public event ConnectEventHandler OnConnect;
+
+        public delegate void DisconnectEventHandler(object sender);
+        public event DisconnectEventHandler OnDisconnect;
+
+        public TVISrvSlave(KlAkParams SrvInfo)
+        {
+            fSrvInfo = SrvInfo;
+            Header = fSrvInfo.get_Item("KLSRVH_SRV_DN");
+        }
+
+        public void Connect()
+        {
+            fPxy = ((TVISlaveSrvs)Parent).fSlaves.Connect(fSrvInfo.get_Item("KLSRVH_SRV_ID"), -1);
+            Items.Add(new TVISlaveSrvs(new KlAkSlaveServers() { AdmServer = fPxy }));
+            Items.Add(new TVIVSrvs(new KlAkVServers3() { AdmServer = fPxy }));
+            OnConnect?.Invoke(this);
+        }
+
+        public void Disconnect()
+        {
+            Items.Clear();
+            fPxy.Disconnect();
+            OnDisconnect?.Invoke(this);
+        }
+
+        public TreeViewItem ViewInfo()
+        {
+            return FetchInfo.KlAkView("Информация о сервере", fSrvInfo);
+        }
+
+        public TreeViewItem ViewPxyProps()
+        {
+            return (fPxy == null) ? new TreeViewItem() { Header = "Подключение не установлено" } : FetchInfo.KlAkView("Данные о подключении", FetchInfo.PxyProps(fPxy));
+        }
+    }
+
+    class TVISrvVirtual : TreeViewItem
+    {
+        public KlAkProxy fPxy = null;
+        public KlAkParams fSrvInfo = null;
+
+        public TVISrvVirtual(KlAkParams SrvInfo)
+        {
+            fSrvInfo = SrvInfo;
+            Header = fSrvInfo.get_Item("KLVSRV_DN");
+        }
+
+        public TreeViewItem[] ViewInfo()
+        {
+            return new[]
+            {
+                FetchInfo.KlAkView("Информация о сервере", fSrvInfo),
+                FetchInfo.KlAkView("Статистика", ((TVIVSrvs)Parent).fVirtuals.GetVServerStatistic((int)fSrvInfo.get_Item("KLVSRV_ID"))),
+                FetchInfo.KlAkView("Разрешения", ((TVIVSrvs)Parent).fVirtuals.GetPermissions((int)fSrvInfo.get_Item("KLVSRV_ID")))
+            };
+        }
+    }
 
     public partial class MainWindow : Window
     {
         int CISResult;
+        string[] fCreds = null;
+
+        void ViewSrvInfo(TVISrvVirtual Item)
+        {
+            SrvInfo.Items.Clear();
+            foreach (var VItem in Item.ViewInfo())
+            {
+                SrvInfo.Items.Add(VItem);
+            }
+        }
+
+        void ViewSrvInfo(TVISrvSlave Item)
+        {
+            SrvInfo.Items.Clear();
+            SrvInfo.Items.Add(Item.ViewInfo());
+            SrvInfo.Items.Add(Item.ViewPxyProps());
+        }
+
+        void ViewSrvInfo(TVISrvRoot Item)
+        {
+            SrvInfo.Items.Clear();
+            SrvInfo.Items.Add(Item.ViewPxyProps());
+        }
 
         public MainWindow()
         {
             CISResult = NativeMethods.Init();
             if (CISResult != 0)
             {
-                MessageBox.Show("Ошибка при вызове CoInitializeSecurity (0x" + CISResult.ToString("X") + ")", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                MessageBox.Show("Ошибка при вызове CoInitializeSecurity (0x" + CISResult.ToString("X") + "). Используем явную аутентификацию.", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                fCreds = new string[3] { "user", "passwd", "test" };
             }
             InitializeComponent();
         }
 
-        void FixMIAvailability()
+        private void MenuTest_Click(object sender, RoutedEventArgs e)
         {
-            if (SrvTree.SelectedItem is TreeViewItemPxy Current)
-            {
-                miConnect.IsEnabled = !Current.Pxy.Connected;
-                miDisconnect.IsEnabled = miBrowse.IsEnabled = Current.Pxy.Connected;
-            }
-            else { miConnect.IsEnabled = miDisconnect.IsEnabled = false; }
+            MessageBox.Show("Has " + (!SrvTree.HasItems ? "no" : SrvTree.Items.Count.ToString()) + " items");
         }
 
-        string GetSrvInfo()
+        private void MenuExit_Click(object sender, RoutedEventArgs e)
         {
-            string result = "";
-
-            if (SrvTree.SelectedItem is TreeViewItemPxy Item)
-            {
-                foreach (string Key in Item.PxyInfo.Keys)
-                {
-                    result += Key + " = " + Item.PxyInfo[Key] + "\r\n";
-                }
-
-                if (result != "")
-                    result += "\r\n";
-
-                if (!Item.Pxy.Connected)
-                {
-                    result += "Подключение не установлено\r\n";
-                }
-                else
-                {
-                    foreach (string Key in Item.Pxy.Props.Keys)
-                    {
-                        result += Key + " = " + (Item.Pxy.Props[Key] ?? "<Не определено>") + "\r\n";
-                    }
-                }
-            }
-
-            return result;
+            Close();
         }
 
-        private void miAddSrv_Click(object sender, RoutedEventArgs e)
+        private void MenuAddSrv_Click(object sender, RoutedEventArgs e)
         {
-            TreeViewItemPxy Item = new TreeViewItemPxy
+            if (!SrvTree.HasItems)
             {
-                Header = "KSCRoot"
-            };
-            SrvTree.Items.Add(Item);
+                var ConnParamsWnd = new ConnParams() { Owner = this };
+                ConnParamsWnd.ShowDialog();
+                var Root = new TVISrvRoot();
+                SrvTree.Items.Add(Root);
+            }
         }
 
         private void SrvTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            FixMIAvailability();
-
-            tbData.Text = GetSrvInfo();
+            MenuConnect.IsEnabled = (((e.NewValue is TVISrvRoot) && ((TVISrvRoot)e.NewValue).fPxy == null) || ((e.NewValue is TVISrvSlave) && ((TVISrvSlave)e.NewValue).fPxy == null));
+            MenuDisconnect.IsEnabled = (((e.NewValue is TVISrvRoot) && ((TVISrvRoot)e.NewValue).fPxy != null) || ((e.NewValue is TVISrvSlave) && ((TVISrvSlave)e.NewValue).fPxy != null));
+            RefreshSrvInfo(e.NewValue);
         }
 
-        private void miConnect_Click(object sender, RoutedEventArgs e)
+        private void RefreshSrvInfo(object Node)
         {
-            TreeViewItemPxy tvi = (TreeViewItemPxy)SrvTree.SelectedItem;
-
-            if (tvi.ParentNode == null)
+            if (Node is TVISrvVirtual VSrv)
             {
-                tvi.Pxy.Connect((string)tvi.Header);
+                ViewSrvInfo(VSrv);
+            }
+            else if (Node is TVISrvSlave SSrv)
+            {
+                ViewSrvInfo(SSrv);
+            }
+            else if (Node is TVISrvRoot RSrv)
+            {
+                ViewSrvInfo(RSrv);
             }
             else
             {
-                using (dynamic ssParent = tvi.IsPxyVirtual ? (object)(new KlAkVServers3()) : (new KlAkSlaveServers()))
-                {
-                    ssParent.AdmSrv = tvi.ParentNode.Pxy;
-                    tvi.Pxy.Connect(ssParent, tvi.PxyId);
-                }
+                SrvInfo.Items.Clear();
             }
-
-            FixMIAvailability();
-
-            KlAkSlaveServers Slaves = new KlAkSlaveServers
-            {
-                AdmSrv = tvi.Pxy
-            };
-            foreach (int i in Slaves.Ids)
-            {
-                TreeViewItemPxy NewSrv = new TreeViewItemPxy
-                {
-                    Header = Slaves[i]["KLSRVH_SRV_DN"],
-                    PxyId = i,
-                    PxyInfo = Slaves[i]
-                };
-                tvi.SlaveItems.Add(NewSrv);
-            }
-
-            KlAkVServers3 Virtuals = new KlAkVServers3
-            {
-                AdmSrv = tvi.Pxy
-            };
-            foreach (int i in Virtuals.Ids)
-            {
-                TreeViewItemPxy NewSrv = new TreeViewItemPxy(true)
-                {
-                    Header = Virtuals[i]["KLVSRV_DN"],
-                    PxyId = i,
-                    PxyInfo = Virtuals[i]
-                };
-                tvi.VirtualItems.Add(NewSrv);
-            }
-            tbData.Text = GetSrvInfo();
         }
 
-        private void miBrowse_Click(object sender, RoutedEventArgs e)
+        private void MenuConnect_Click(object sender, RoutedEventArgs e)
         {
-            KSCBrowser KSCBrowserWnd = new KSCBrowser();
-            KSCBrowserWnd.ShowDialog(((TreeViewItemPxy)SrvTree.SelectedItem).Pxy);
-        }
-
-        private void miTest_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Действий нет");
+            if (SrvTree.SelectedItem is TVISrvRoot Root)
+            {
+                Root.Connect(fCreds);
+            }
+            else if (SrvTree.SelectedItem is TVISrvSlave Slave)
+            {
+                Slave.Connect();
+            }
+            MenuDisconnect.IsEnabled = !(MenuConnect.IsEnabled = false);
+            RefreshSrvInfo(SrvTree.SelectedItem);
         }
     }
 }

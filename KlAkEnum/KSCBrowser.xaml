@@ -12,8 +12,8 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <TreeView x:Name="KSCTree"/>
+        <TreeView x:Name="ItemsTree"/>
         <GridSplitter Grid.Column="1" Width="2" HorizontalAlignment="Center"/>
-        <TreeView x:Name="treeView" Grid.Column="2"/>
+        <TreeView x:Name="ItemsView" Grid.Column="2"/>
     </Grid>
 </Window>
