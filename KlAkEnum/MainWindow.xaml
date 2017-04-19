@@ -16,7 +16,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Menu x:Name="MainMenu" VerticalAlignment="Top" Grid.ColumnSpan="3">
+        <Menu x:Name="MainMenu" Grid.ColumnSpan="3">
             <MenuItem x:Name="MenuFile" Header="Файл">
                 <MenuItem x:Name="MenuAddSrv" Header="Добавить сервер" Click="MenuAddSrv_Click"/>
                 <Separator/>
@@ -24,9 +24,9 @@
             </MenuItem>
             <MenuItem Header="Действия">
                 <MenuItem x:Name="MenuConnect" Header="Подключиться" IsEnabled="False" Click="MenuConnect_Click"/>
-                <MenuItem x:Name="MenuDisconnect" Header="Отключиться" IsEnabled="False"/>
+                <MenuItem x:Name="MenuDisconnect" Header="Отключиться" IsEnabled="False" Click="MenuDisconnect_Click"/>
                 <Separator/>
-                <MenuItem x:Name="MenuBrowse" Header="Обозреватель KSC" IsEnabled="False"/>
+                <MenuItem x:Name="MenuBrowse" Header="Обозреватель KSC" IsEnabled="False" Click="MenuBrowse_Click"/>
                 <MenuItem x:Name="MenuTest" Header="Test" Click="MenuTest_Click"/>
             </MenuItem>
         </Menu>

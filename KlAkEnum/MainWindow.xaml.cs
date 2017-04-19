@@ -94,7 +94,7 @@ namespace KlAkEnum
         {
             // Эти поля взяты из klakaut.chm
 
-            return new KlAkParams()
+            return (Pxy == null) ? null : new KlAkParams()
             {
                 { "IsAlive", Pxy.GetProp("IsAlive") },
                 { "KLADMSRV_VS_LICDISABLED", Pxy.GetProp("KLADMSRV_VS_LICDISABLED") },
@@ -107,11 +107,13 @@ namespace KlAkEnum
 
         public static TreeViewItem KlAkView(string Caption, object Item)
         {
-            var t = Item.GetType();
-            var iis = t.GetProperties();
-            
             var result = new TreeViewItem() { Header = Caption };
-            if (Item is KlAkParams Params)
+
+            if (Item == null)
+            {
+                result.Items.Add(new TreeViewItem() { Header = "Нет данных" });
+            }
+            else if (Item is KlAkParams Params)
             {
                 foreach (string Name in Params)
                 {
@@ -255,6 +257,7 @@ namespace KlAkEnum
         {
             Items.Clear();
             fPxy.Disconnect();
+            fPxy = null;
             OnDisconnect?.Invoke(this);
         }
 
@@ -271,7 +274,6 @@ namespace KlAkEnum
 
     class TVISrvVirtual : TreeViewItem
     {
-        public KlAkProxy fPxy = null;
         public KlAkParams fSrvInfo = null;
 
         public TVISrvVirtual(KlAkParams SrvInfo)
@@ -331,7 +333,7 @@ namespace KlAkEnum
 
         private void MenuTest_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Has " + (!SrvTree.HasItems ? "no" : SrvTree.Items.Count.ToString()) + " items");
+            
         }
 
         private void MenuExit_Click(object sender, RoutedEventArgs e)
@@ -387,13 +389,14 @@ namespace KlAkEnum
 
         private void SrvTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            MenuConnect.IsEnabled = (((e.NewValue is TVISrvRoot) && ((TVISrvRoot)e.NewValue).fPxy == null) || ((e.NewValue is TVISrvSlave) && ((TVISrvSlave)e.NewValue).fPxy == null));
-            MenuDisconnect.IsEnabled = (((e.NewValue is TVISrvRoot) && ((TVISrvRoot)e.NewValue).fPxy != null) || ((e.NewValue is TVISrvSlave) && ((TVISrvSlave)e.NewValue).fPxy != null));
             RefreshSrvInfo(e.NewValue);
         }
 
         private void RefreshSrvInfo(object Node)
         {
+            MenuConnect.IsEnabled = (((Node is TVISrvRoot) && ((TVISrvRoot)Node).fPxy == null) || ((Node is TVISrvSlave) && ((TVISrvSlave)Node).fPxy == null));
+            MenuDisconnect.IsEnabled = (((Node is TVISrvRoot) && ((TVISrvRoot)Node).fPxy != null) || ((Node is TVISrvSlave) && ((TVISrvSlave)Node).fPxy != null));
+            MenuBrowse.IsEnabled = MenuDisconnect.IsEnabled || (Node is TVISrvVirtual);
             if (Node is TVISrvVirtual VSrv)
             {
                 ViewSrvInfo(VSrv);
@@ -422,8 +425,40 @@ namespace KlAkEnum
             {
                 Slave.Connect();
             }
-            MenuDisconnect.IsEnabled = !(MenuConnect.IsEnabled = false);
             RefreshSrvInfo(SrvTree.SelectedItem);
+        }
+
+        private void MenuDisconnect_Click(object sender, RoutedEventArgs e)
+        {
+            if (SrvTree.SelectedItem is TVISrvRoot Root)
+            {
+                Root.Disconnect();
+            }
+            else if (SrvTree.SelectedItem is TVISrvSlave Slave)
+            {
+                Slave.Disconnect();
+            }
+            RefreshSrvInfo(SrvTree.SelectedItem);
+        }
+
+        private void MenuBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            KSCBrowser Browser = null;
+
+            if (SrvTree.SelectedItem is TVISrvRoot RSrv)
+            {
+                Browser = new KSCBrowser(RSrv.fPxy);
+            }
+            else if (SrvTree.SelectedItem is TVISrvSlave SSrv)
+            {
+                Browser = new KSCBrowser(SSrv.fPxy);
+            }
+            else if (SrvTree.SelectedItem is TVISrvVirtual VSrv)
+            {
+                Browser = new KSCBrowser(((TVIVSrvs)VSrv.Parent).fVirtuals.AdmServer, VSrv.fSrvInfo.get_Item("KLVSRV_ID"));
+            }
+
+            Browser.ShowDialog();
         }
     }
 }

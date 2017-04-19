@@ -8,12 +8,21 @@
         Title="Обозреватель KSC" Height="300" Width="643.777">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="250"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <TreeView x:Name="ItemsTree"/>
-        <GridSplitter Grid.Column="1" Width="2" HorizontalAlignment="Center"/>
-        <TreeView x:Name="ItemsView" Grid.Column="2"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Menu x:Name="MainMenu" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3">
+            <MenuItem x:Name="MenuFile" Header="Файл">
+                <MenuItem x:Name="MenuExit" Header="Выход" Click="MenuExit_Click"/>
+            </MenuItem>
+        </Menu>
+        <TreeView x:Name="GroupsTree" Grid.Column="0" Grid.Row="1" SelectedItemChanged="GroupsTree_SelectedItemChanged"/>
+        <GridSplitter Grid.Column="1" Grid.Row="1" Width="2" HorizontalAlignment="Center"/>
+        <TreeView x:Name="GroupInfo" Grid.Column="2" Grid.Row="1"/>
     </Grid>
 </Window>
