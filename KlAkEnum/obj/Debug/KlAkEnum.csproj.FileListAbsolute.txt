@@ -17,4 +17,5 @@ C:\Users\user.TEST\Source\Repos\KlAkEnum\KlAkEnum\obj\Debug\Interop.KLAKAUTLib.d
 C:\Users\user.TEST\Source\Repos\KlAkEnum\KlAkEnum\obj\Debug\KlAkEnum.csproj.ResolveComReference.cache
 C:\Users\user.TEST\Source\Repos\KlAkEnum\KlAkEnum\obj\Debug\ConnParams.g.cs
 C:\Users\user.TEST\Source\Repos\KlAkEnum\KlAkEnum\obj\Debug\ConnParams.baml
-C:\Users\user.TEST\Source\Repos\KlAkEnum\KlAkEnum\obj\Debug\KlAkEnum.csprojResolveAssemblyReference.cache
+C:\Users\user.TEST\Source\Repos\KlAkEnum\KlAkEnum\bin\Debug\KlAkEnum.exe.CodeAnalysisLog.xml
+C:\Users\user.TEST\Source\Repos\KlAkEnum\KlAkEnum\bin\Debug\KlAkEnum.exe.lastcodeanalysissucceeded
