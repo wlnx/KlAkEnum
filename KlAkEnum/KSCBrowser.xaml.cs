@@ -16,6 +16,8 @@ namespace KlAkEnum
         KlAkGroups fGroups;
         int fGroupId;
 
+        public int Id { get => fGroupId; }
+
         void CreateSubItems()
         {
             var GroupsHier = fGroups.GetSubgroups(fGroupId, 1);
@@ -39,10 +41,24 @@ namespace KlAkEnum
         }
     }
 
+    class TVIHost : TreeViewItem
+    {
+        public TVIHost(string HostName, KlAkHosts2 Hosts)
+        {
+            var HostParamsList = new KlAkCollection();
+            HostParamsList.SetSize(1);
+            HostParamsList.SetAt(0, "KLHST_WKS_DN");
+            var HostParams = Hosts.GetHostInfo(HostName, HostParamsList);
+            Header = HostParams.get_Item("KLHST_WKS_DN");
+            Items.Add(FetchInfo.KlAkView("Настройки узла", Hosts.GetHostSettings(HostName, "SS_SETTINGS")));
+        }
+    }
+
     public partial class KSCBrowser : Window
     {
         int? fVServerId = null;
         KlAkGroups fGroups = new KlAkGroups();
+        KlAkHosts2 fHosts = new KlAkHosts2();
 
         int idGroups, idSuper, idUnassigned;
    
@@ -50,6 +66,7 @@ namespace KlAkEnum
         {
             fVServerId = VServerId;
             fGroups.AdmServer = Proxy;
+            fHosts.AdmServer = Proxy;
 
             if (fVServerId.HasValue)
             {
@@ -79,6 +96,16 @@ namespace KlAkEnum
         {
             GroupInfo.Items.Clear();
             GroupInfo.Items.Add(((TVIGroup)e.NewValue).ViewInfo());
+
+            var HostFieldsList = new KlAkCollection();
+            HostFieldsList.SetSize(2);
+            HostFieldsList.SetAt(0, "KLHST_WKS_DN");
+            HostFieldsList.SetAt(1, "KLHST_WKS_HOSTNAME");
+            var HostList = fHosts.FindHosts("(KLHST_WKS_GROUPID = " + ((TVIGroup)e.NewValue).Id.ToString() + ")", HostFieldsList, HostFieldsList);
+            foreach (KlAkParams HostInfo in HostList)
+            {
+                GroupInfo.Items.Add(new TVIHost(HostInfo.get_Item("KLHST_WKS_HOSTNAME"), fHosts)) ;
+            }
         }
 
         private void MenuExit_Click(object sender, RoutedEventArgs e)

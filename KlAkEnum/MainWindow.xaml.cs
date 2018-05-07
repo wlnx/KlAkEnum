@@ -143,6 +143,16 @@ namespace KlAkEnum
                     }
                 }
             }
+            else if (Item is IKlAkSettingsStorage Settings)
+            {
+                var Storages = Settings.Enum();
+                for (int i = 0; i < Storages.Count; i++)
+                {
+                    KlAkParams Storage = Storages.get_Item(i);
+                    var Data = Settings.Read(Storage.get_Item("PRODUCT"), Storage.get_Item("VERSION"), Storage.get_Item("SECTION"));
+                    result.Items.Add(FetchInfo.KlAkView(Storage.get_Item("PRODUCT") + "/" + Storage.get_Item("VERSION") + "/" + Storage.get_Item("SECTION"), Data));
+                }
+            }
             else { throw new NotImplementedException("Визуализация типа " + Item.GetType().ToString() + " не реализована."); }
             return result;
         }
