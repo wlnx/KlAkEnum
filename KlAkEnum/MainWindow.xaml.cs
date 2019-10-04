@@ -356,7 +356,7 @@ namespace KlAkEnum
             var ConnParamsWnd = new ConnParams() { Owner = this } ;
             if (fCredsRequired)
             {
-                ConnParamsWnd.cbIsAuthenticating.IsEnabled = ConnParamsWnd.cbUseSSL.IsEnabled = !(bool)(ConnParamsWnd.cbIsAuthenticating.IsChecked = true);
+                ConnParamsWnd.cbIsAuthenticating.IsEnabled = ConnParamsWnd.cbUseSSL.IsEnabled = !(bool)(ConnParamsWnd.cbUseSSL.IsChecked = ConnParamsWnd.cbIsAuthenticating.IsChecked = true);
             }
             if ((bool)ConnParamsWnd.ShowDialog())
             {

@@ -68,11 +68,11 @@ namespace KlAkEnum
 
         private void cbIsAuthenticating_Checked(object sender, RoutedEventArgs e)
         {
-            if (cbUseSSL.IsChecked == false)
+            if (cbUseSSL.IsChecked != true)
             {
                 cbIsAuthenticating.IsChecked = false;
             }
-            cbIsAuthenticating.IsEnabled = (cbUseSSL.IsChecked != false);
+            cbIsAuthenticating.IsEnabled = (cbUseSSL.IsChecked == true);
             tbUser.IsEnabled = tbPassword.IsEnabled = tbDomain.IsEnabled = (bool)cbIsAuthenticating.IsChecked;
         }
 

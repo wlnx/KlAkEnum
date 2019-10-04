@@ -24,7 +24,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <CheckBox x:Name="cbIsAuthenticating" Content="Аутентификация" Grid.Row="0" Grid.Column="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.ColumnSpan="3" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="cbIsAuthenticating_Checked" Unchecked="cbIsAuthenticating_Checked"/>
+            <CheckBox x:Name="cbIsAuthenticating" Content="Аутентификация" Grid.Row="0" Grid.Column="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.ColumnSpan="3" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="cbIsAuthenticating_Checked" Unchecked="cbIsAuthenticating_Checked" IsEnabled="False"/>
             <Label Content="Домен" Grid.Row="1" Grid.Column="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             <Label Content="Имя пользователя" Grid.Row="1" Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             <Label Content="Пароль" Grid.Row="1" Grid.Column="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
@@ -65,7 +65,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <CheckBox x:Name="cbIsUsingProxy" Content="Использовать прокси" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2" FontWeight="Bold" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Checked="cbIsUsingProxy_Checked"/>
+            <CheckBox x:Name="cbIsUsingProxy" Content="Использовать прокси" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2" FontWeight="Bold" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Checked="cbIsUsingProxy_Checked" Unchecked="cbIsUsingProxy_Checked"/>
             <Label Content="Адрес сервера" Grid.Row="1" Grid.Column="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             <Label Content="Порт" Grid.Row="1" Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
             <Label Content="Имя пользователя" Grid.Row="3" Grid.Column="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
