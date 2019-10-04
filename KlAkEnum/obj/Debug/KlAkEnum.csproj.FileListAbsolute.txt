@@ -43,7 +43,6 @@ C:\Users\admin\Source\Repos\KlAkEnum\KlAkEnum\obj\Debug\KlAkEnum.pdb
 C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\bin\Debug\KlAkEnum.exe.config
 C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\bin\Debug\KlAkEnum.exe
 C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\bin\Debug\KlAkEnum.pdb
-C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\obj\Debug\KlAkEnum.csprojAssemblyReference.cache
 C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\obj\Debug\Interop.KLAKAUTLib.dll
 C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\obj\Debug\KlAkEnum.csproj.ResolveComReference.cache
 C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\obj\Debug\KSCBrowser.baml
@@ -60,3 +59,5 @@ C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\obj\Debug\KlAkEnum.Properties
 C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\obj\Debug\KlAkEnum.csproj.GenerateResource.cache
 C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\obj\Debug\KlAkEnum.exe
 C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\obj\Debug\KlAkEnum.pdb
+C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\bin\Debug\KlAkEnum.exe.CodeAnalysisLog.xml
+C:\Users\admin\Source\Repos\wlnx\KlAkEnum\KlAkEnum\bin\Debug\KlAkEnum.exe.lastcodeanalysissucceeded

@@ -353,10 +353,10 @@ namespace KlAkEnum
 
         private void MenuAddSrv_Click(object sender, RoutedEventArgs e)
         {
-            var ConnParamsWnd = new ConnParams() { Owner = this } ;
+            var ConnParamsWnd = new ConnParams(fCredsRequired) { Owner = this } ;
             if (fCredsRequired)
             {
-                ConnParamsWnd.cbIsAuthenticating.IsEnabled = ConnParamsWnd.cbUseSSL.IsEnabled = !(bool)(ConnParamsWnd.cbUseSSL.IsChecked = ConnParamsWnd.cbIsAuthenticating.IsChecked = true);
+                
             }
             if ((bool)ConnParamsWnd.ShowDialog())
             {

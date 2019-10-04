@@ -22,8 +22,10 @@ namespace KlAkEnum
     /// </summary>
     public partial class ConnParams : Window
     {
-        public ConnParams()
+        bool fCredRequired;
+        public ConnParams(bool IsCredRequired)
         {
+            fCredRequired = IsCredRequired;
             InitializeComponent();
         }
 
@@ -68,11 +70,16 @@ namespace KlAkEnum
 
         private void cbIsAuthenticating_Checked(object sender, RoutedEventArgs e)
         {
+            if (fCredRequired)
+            {
+                cbIsAuthenticating.IsChecked = cbUseSSL.IsChecked = !(cbIsAuthenticating.IsEnabled = cbUseSSL.IsEnabled = false);
+            }
+            
             if (cbUseSSL.IsChecked != true)
             {
                 cbIsAuthenticating.IsChecked = false;
             }
-            cbIsAuthenticating.IsEnabled = (cbUseSSL.IsChecked == true);
+            cbIsAuthenticating.IsEnabled = (cbUseSSL.IsChecked == true) && !fCredRequired;
             tbUser.IsEnabled = tbPassword.IsEnabled = tbDomain.IsEnabled = (bool)cbIsAuthenticating.IsChecked;
         }
 
